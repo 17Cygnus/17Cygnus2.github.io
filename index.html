@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kotak Kado Interaktif - Hadiah Ulang Tahun</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color: #FFD700;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .gift-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 40px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .gift-box {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .gift-box.opened {
+            transform: rotateY(180deg) translateY(-50px);
+        }
+        
+        .gift-lid, .gift-body {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .gift-lid {
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transform: rotateY(0deg);
+            z-index: 2;
+        }
+        
+        .gift-body {
+            background: linear-gradient(45deg, #36D1DC, #5B86E5);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .ribbon {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+        
+        .ribbon-horizontal {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            transform: translateY(-50%);
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .ribbon-vertical {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(180deg, #FFD700, #FFA500);
+            transform: translateX(-50%);
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .ribbon-bow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ribbon-bow::before, .ribbon-bow::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 40px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            top: 10px;
+        }
+        
+        .ribbon-bow::before {
+            left: -30px;
+            transform: rotate(-30deg);
+        }
+        
+        .ribbon-bow::after {
+            right: -30px;
+            transform: rotate(30deg);
+        }
+        
+        .gift-icon {
+            font-size: 5rem;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .click-instruction {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin-top: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        .surprise-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease-out 0.5s;
+        }
+        
+        .surprise-content.visible {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .surprise-image {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .surprise-message {
+            font-size: 1.5rem;
+            margin-top: 15px;
+            color: #FFD700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .birthday-message {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 600px;
+            margin: 30px auto 0;
+        }
+        
+        .message-highlight {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        .reset-button {
+            margin-top: 30px;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .reset-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .audio-controls {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .audio-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .audio-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background-color: #f0f;
+            top: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        @keyframes confettiRain {
+            0% {
+                opacity: 1;
+                top: -100px;
+                transform: rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                top: 100vh;
+                transform: rotate(360deg);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .gift-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-birthday-cake"></i> Selamat Ulang Tahun!!!</h1>
+        <p class="subtitle">Ayo klik kotak kadonya!</p>
+        
+        <div class="gift-container" id="giftContainer">
+            <div class="gift-box" id="giftBox">
+                <!-- Sisi depan (tutup kotak) -->
+                <div class="gift-lid">
+                    <div class="ribbon">
+                        <div class="ribbon-horizontal"></div>
+                        <div class="ribbon-vertical"></div>
+                        <div class="ribbon-bow"></div>
+                    </div>
+                    <i class="fas fa-gift gift-icon"></i>
+                    <p class="click-instruction">KLIK UNTUK MEMBUKA</p>
+                </div>
+                
+                <!-- Sisi belakang (isi kotak) -->
+                <div class="gift-body">
+                    <div class="surprise-content" id="surpriseContent">
+                        <img src="Dolldolly.jpg" alt="Kejutan Ulang Tahun" class="surprise-image">
+                        <p class="surprise-message">SELAMAT ULANG TAHUN! 🎉</p>
+                        
+                        <div class="audio-controls">
+                            <button class="audio-btn" id="playBtn">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="audio-btn" id="pauseBtn">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button class="audio-btn" id="stopBtn">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="birthday-message">
+            <p>Untukmu di hari spesial ini, <span class="message-highlight">semoga semua harapan dan impianmu menjadi kenyataan</span>. Semoga tahun ini membawamu lebih dekat pada versi terbaik dirimu - bahagia, sehat, dan penuh semangat baru.</p>
+            <p style="margin-top: 10px;">Kuharap dunia selalu memperlakukanmu dengan baik, dan setiap langkahmu diiringi keberuntungan dan kebahagiaan. <span class="message-highlight">Selamat ulang tahun!</span> 🎂🎁</p>
+        </div>
+        
+        <button class="reset-button" id="resetBtn">
+            <i class="fas fa-redo"></i> Tutup Kembali Kotak Kado
+        </button>
+    </div>
+    
+    <audio id="birthdayAudio" preload="auto">
+        <source src="Blessing.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const giftContainer = document.getElementById('giftContainer');
+            const giftBox = document.getElementById('giftBox');
+            const surpriseContent = document.getElementById('surpriseContent');
+            const resetBtn = document.getElementById('resetBtn');
+            const birthdayAudio = document.getElementById('birthdayAudio');
+            const playBtn = document.getElementById('playBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            let isOpened = false;
+            
+            // Fungsi untuk membuka kotak kado
+            function openGift() {
+                if (isOpened) return;
+                
+                isOpened = true;
+                
+                // Tambahkan kelas untuk animasi membuka
+                giftBox.classList.add('opened');
+                
+                // Tampilkan konten kejutan setelah delay
+                setTimeout(() => {
+                    surpriseContent.classList.add('visible');
+                    
+                    // Mulai memutar musik secara otomatis
+                    birthdayAudio.play().catch(e => {
+                        console.log("Autoplay diblokir, menunggu interaksi pengguna");
+                    });
+                    
+                    // Buat efek confetti
+                    createConfetti();
+                }, 800);
+            }
+            
+            // Fungsi untuk menutup kotak kado
+            function closeGift() {
+                if (!isOpened) return;
+                
+                isOpened = false;
+                
+                // Sembunyikan konten kejutan
+                surpriseContent.classList.remove('visible');
+                
+                // Hentikan musik
+                birthdayAudio.pause();
+                birthdayAudio.currentTime = 0;
+                
+                // Hapus kelas untuk animasi membuka
+                setTimeout(() => {
+                    giftBox.classList.remove('opened');
+                }, 100);
+            }
+            
+            // Fungsi untuk membuat efek confetti
+            function createConfetti() {
+                const colors = ['#FFD700', '#FF416C', '#36D1DC', '#5B86E5', '#FFA500', '#FF4B2B'];
+                
+                for (let i = 0; i < 150; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    
+                    // Warna acak
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.backgroundColor = color;
+                    
+                    // Posisi acak
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    
+                    // Ukuran acak
+                    const size = Math.random() * 15 + 5;
+                    confetti.style.width = size + 'px';
+                    confetti.style.height = size + 'px';
+                    
+                    // Animasi dengan durasi dan delay acak
+                    const animationDuration = Math.random() * 3 + 2;
+                    const animationDelay = Math.random() * 5;
+                    
+                    confetti.style.animation = `confettiRain ${animationDuration}s linear ${animationDelay}s forwards`;
+                    
+                    document.body.appendChild(confetti);
+                    
+                    // Hapus confetti setelah animasi selesai
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, (animationDuration + animationDelay) * 1000);
+                }
+            }
+            
+            // Event listeners
+            giftContainer.addEventListener('click', openGift);
+            resetBtn.addEventListener('click', closeGift);
+            
+            // Kontrol audio
+            playBtn.addEventListener('click', () => {
+                birthdayAudio.play();
+            });
+            
+            pauseBtn.addEventListener('click', () => {
+                birthdayAudio.pause();
+            });
+            
+            stopBtn.addEventListener('click', () => {
+                birthdayAudio.pause();
+                birthdayAudio.currentTime = 0;
+            });
+            
+            // Tambahkan efek hover pada kotak kado
+            giftContainer.addEventListener('mouseenter', () => {
+                if (!isOpened) {
+                    giftContainer.style.transform = 'scale(1.05)';
+                }
+            });
+            
+            giftContainer.addEventListener('mouseleave', () => {
+                giftContainer.style.transform = 'scale(1)';
+            });
+            
+            // Tambahkan animasi untuk instruksi klik
+            const clickInstruction = document.querySelector('.click-instruction');
+            setInterval(() => {
+                if (!isOpened) {
+                    clickInstruction.style.transform = clickInstruction.style.transform === 'scale(1.05)' ? 'scale(1)' : 'scale(1.05)';
+                }
+            }, 1000);
+            
+            // Pesan konsol khusus
+            console.log("%c🎁 SELAMAT ULANG TAHUN! 🎉", "color: #FFD700; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px #000;");
+            console.log("%cKotak kado ini dibuat khusus untuk merayakan hari spesialmu!", "color: #36D1DC; font-size: 14px;");
+        });
+    </script>
+</body>
+</html>
